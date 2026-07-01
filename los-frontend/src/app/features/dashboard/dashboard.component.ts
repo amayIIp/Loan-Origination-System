@@ -1,7 +1,4 @@
-/**
- * dashboard.component.ts — placeholder Dashboard component.
- * Full implementation (KPI cards, loan pipeline, charts) will be built in Phase 2.
- */
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

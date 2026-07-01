@@ -1,4 +1,4 @@
-// frontend/src/app/app.routes.ts
+
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -9,7 +9,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    // Apply our functional guard here. If this returns false, navigation is blocked.
+    
     canActivate: [authGuard] 
   },
   { path: '', redirectTo: 'apply', pathMatch: 'full' },

@@ -1,7 +1,4 @@
-/**
- * kyc.component.ts — placeholder KYC Document Upload component.
- * Full KYC upload flow with file validation will be built in Phase 4.
- */
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

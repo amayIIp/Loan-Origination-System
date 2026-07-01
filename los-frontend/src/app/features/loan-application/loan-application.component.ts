@@ -1,7 +1,4 @@
-/**
- * loan-application.component.ts — placeholder Loan Application component.
- * Full multi-step reactive form will be built in Phase 3.
- */
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

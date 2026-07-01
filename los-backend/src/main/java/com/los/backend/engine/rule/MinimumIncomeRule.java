@@ -12,26 +12,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * MinimumIncomeRule — verifies that the applicant's monthly income meets
- * a minimum floor before other ratio-based rules are even relevant.
- *
- * WHY A MINIMUM INCOME RULE SEPARATE FROM DTI?
- * ─────────────────────────────────────────────
- * DTI (40%) only means "your debt burden is manageable relative to your income."
- * But DTI = 40% on ₹10,000/month income = ₹4,000 EMI commitment.
- * After a ₹40,000 monthly EMI on a new loan, the applicant would have ₹6,000 left
- * for all living expenses — clearly unworkable even if DTI technically passes.
- *
- * A minimum income floor (e.g., ₹25,000/month) ensures even at a good DTI ratio,
- * the absolute income is meaningful enough to absorb the new loan obligation.
- * This is standard practice: SBI, HDFC, ICICI all publish minimum income floors.
- */
+
 @Component
 @Slf4j
 public class MinimumIncomeRule implements Rule {
 
-    // ₹25,000/month minimum — common personal loan floor across Indian lenders
+    
     private static final double DEFAULT_MIN_MONTHLY_INCOME = 25000.0;
     private static final double DEFAULT_WEIGHT             = 15.0;
 
@@ -52,7 +38,7 @@ public class MinimumIncomeRule implements Rule {
         log.debug("[MinIncomeRule] Evaluating applicantId={} income={}",
                   context.getApplicantId(), context.getMonthlyIncomeInr());
 
-        // Load threshold from MongoDB
+        
         List<CreditRule> activeRules = creditRuleRepository.findByRuleTypeAndIsActiveTrue(RuleType.MINIMUM_INCOME);
 
         double minIncome;
@@ -74,7 +60,7 @@ public class MinimumIncomeRule implements Rule {
             configSource = "MONGODB";
         }
 
-        // Handle null income
+        
         BigDecimal income = context.getMonthlyIncomeInr();
         if (income == null || income.compareTo(BigDecimal.ZERO) <= 0) {
             return RuleResult.builder()

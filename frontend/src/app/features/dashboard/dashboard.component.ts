@@ -1,7 +1,7 @@
-// frontend/src/app/features/dashboard/dashboard.component.ts
+
 import { Component } from '@angular/core';
 
-// A simple placeholder component for the staff dashboard, to be built out later.
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,

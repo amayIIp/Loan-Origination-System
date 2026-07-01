@@ -3,30 +3,30 @@ package com.lending.bre.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-// MongoDB collection for loan applications.
+
 @Document(collection = "loan_applications")
 public class LoanApplication {
-    // Unique ID.
+    
     @Id
     private String id;
-    // Applicant's credit score.
+    
     private int creditScore;
-    // Applicant's age.
+    
     private int age;
-    // Monthly income.
+    
     private double monthlyIncome;
-    // Monthly debt.
+    
     private double monthlyDebt;
-    // Requested amount.
+    
     private double requestedAmount;
-    // Employment status.
+    
     private String employmentStatus;
-    // Current status of the application (e.g., PENDING, APPROVED, REJECTED).
+    
     private String status;
 
     public LoanApplication() {}
 
-    // Getters and setters for all properties.
+    
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     

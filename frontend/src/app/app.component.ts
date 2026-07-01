@@ -1,4 +1,4 @@
-// frontend/src/app/app.component.ts
+
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -46,7 +46,7 @@ import { AuthService } from './core/services/auth.service';
   `
 })
 export class AppComponent {
-  // Inject the AuthService so the HTML template can read the reactive isLoggedIn/userRole signals.
+  
   authService = inject(AuthService);
 
   logout() {

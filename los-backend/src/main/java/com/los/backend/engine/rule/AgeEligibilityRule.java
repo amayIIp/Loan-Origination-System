@@ -11,26 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-/**
- * AgeEligibilityRule — checks whether the applicant's age falls within the
- * lender's eligible age band (minimum and maximum ages configured in MongoDB).
- *
- * WHY AGE LIMITS?
- * ────────────────
- * Minimum age (typically 21): Ensures the applicant has legal majority and
- *   some financial history. Under-21 applicants are often students with no
- *   income, very high default risk.
- * Maximum age (typically 65): Ensures the loan can be repaid before retirement.
- *   A 64-year-old taking a 5-year loan would be 69 at completion —
- *   many lenders also check (age + tenure years ≤ max retirement age).
- *
- * OPTIONAL ENHANCED CHECK: age + loanTermYears ≤ maximumAge
- *   Some lenders apply this stricter check. We implement it as an optional
- *   parameter "enforceAgeAtMaturity" in the CreditRule document. Default: false.
- *
- * This rule is isCritical = false (age near the boundary + excellent credit is
- * a valid manual review case), but a strict lender may override to true.
- */
+
 @Component
 @Slf4j
 public class AgeEligibilityRule implements Rule {
@@ -56,7 +37,7 @@ public class AgeEligibilityRule implements Rule {
         log.debug("[AgeRule] Evaluating applicantId={} age={}",
                   context.getApplicantId(), context.getAgeInYears());
 
-        // Load thresholds from MongoDB
+        
         List<CreditRule> activeRules = creditRuleRepository.findByRuleTypeAndIsActiveTrue(RuleType.AGE);
 
         int minAge, maxAge;
@@ -79,7 +60,7 @@ public class AgeEligibilityRule implements Rule {
                 ? ((Number) params.get("maximumAge")).intValue() : DEFAULT_MAXIMUM_AGE;
             weight   = activeRules.get(0).getWeight() != null
                 ? activeRules.get(0).getWeight().doubleValue() : DEFAULT_WEIGHT;
-            // Boolean values stored in MongoDB come back as Boolean type
+            
             enforceAgeAtMaturity = params.containsKey("enforceAgeAtMaturity")
                 && Boolean.TRUE.equals(params.get("enforceAgeAtMaturity"));
             configSource = "MONGODB";
@@ -87,7 +68,7 @@ public class AgeEligibilityRule implements Rule {
 
         int age = context.getAgeInYears();
 
-        // Handle missing date-of-birth (age = 0 means dob was null in context builder)
+        
         if (age == 0 && context.getDateOfBirth() == null) {
             return RuleResult.builder()
                 .ruleName(getRuleName())
@@ -102,11 +83,11 @@ public class AgeEligibilityRule implements Rule {
                 .build();
         }
 
-        // Basic age band check
+        
         boolean aboveMin = age >= minAge;
         boolean belowMax = age <= maxAge;
 
-        // Optional: check age at loan maturity (age + tenure years ≤ maxAge)
+        
         boolean maturityCheckPassed = true;
         String maturityNote = "";
         if (enforceAgeAtMaturity && context.getTenureMonths() > 0) {

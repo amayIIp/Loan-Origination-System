@@ -30,58 +30,33 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * LoanApplicationServiceTest — unit tests for LoanApplicationService business logic.
- *
- * What is a Unit Test? (beginner explanation)
- * ────────────────────────────────────────────
- * A unit test tests ONE class in ISOLATION. We "mock" (fake) all its dependencies
- * so the test only verifies the logic inside the class being tested.
- *
- * For example: when testing submitApplication(), we don't talk to a real MongoDB.
- * Instead, Mockito creates a fake "loanApplicationRepository" that we configure
- * to return specific values. This makes tests:
- *   - Fast (no network/DB calls)
- *   - Deterministic (no random data from a real DB)
- *   - Focused (if the test fails, the problem is in this service, not the DB)
- *
- * Framework choices:
- *   @ExtendWith(MockitoExtension.class) — enables Mockito's JUnit 5 integration
- *   @Mock — creates a fake (mock) instance of the annotated type
- *   @InjectMocks — creates the REAL instance of the class under test, injecting mocks
- *   AssertJ — fluent assertion library (assertThat(...).isEqualTo(...))
- */
+
 @ExtendWith(MockitoExtension.class)
 class LoanApplicationServiceTest {
 
-    // ── Mocks (fakes) of all dependencies ────────────────────────────────────
-    // Mockito creates these automatically — no real DB or Spring context needed
+    
+    
     @Mock private LoanApplicationRepository loanApplicationRepository;
     @Mock private ApplicantService           applicantService;
     @Mock private ApplicantMapper            applicantMapper;
     @Mock private LoanApplicationMapper      loanApplicationMapper;
 
-    // We use the REAL state machine, not a mock — it has no external dependencies
-    // and we want to test real transition logic. We inject it manually below.
+    
+    
     private LoanStatusStateMachine stateMachine;
 
-    // The class under test — @InjectMocks injects all @Mock fields into it
+    
     @InjectMocks
     private LoanApplicationService loanApplicationService;
 
-    // ── Test data builders ────────────────────────────────────────────────────
+    
 
-    /**
-     * @BeforeEach — runs before EVERY test method.
-     * Re-initialises the real state machine so each test gets a clean instance.
-     * We also inject it into the service manually (since @InjectMocks doesn't
-     * know we want the real one).
-     */
+    
     @BeforeEach
     void setUp() {
-        // Use the REAL state machine to test real transition validation
+        
         stateMachine = new LoanStatusStateMachine();
-        // Recreate the service with the real state machine + all mocks
+        
         loanApplicationService = new LoanApplicationService(
             loanApplicationRepository,
             applicantService,
@@ -91,7 +66,7 @@ class LoanApplicationServiceTest {
         );
     }
 
-    /** Helper: build a SubmitLoanApplicationRequest with sensible test defaults */
+    
     private SubmitLoanApplicationRequest buildSubmitRequest() {
         return SubmitLoanApplicationRequest.builder()
             .applicantId("applicant-001")
@@ -102,7 +77,7 @@ class LoanApplicationServiceTest {
             .build();
     }
 
-    /** Helper: build a saved LoanApplication with a generated id */
+    
     private LoanApplication buildSavedApplication(String id, LoanStatus status) {
         return LoanApplication.builder()
             .id(id)
@@ -115,7 +90,7 @@ class LoanApplicationServiceTest {
             .build();
     }
 
-    /** Helper: build a minimal LoanApplicationResponse for mock return values */
+    
     private LoanApplicationResponse buildApplicationResponse(String id, LoanStatus status) {
         return LoanApplicationResponse.builder()
             .id(id)
@@ -124,15 +99,11 @@ class LoanApplicationServiceTest {
             .build();
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // NESTED TEST CLASS: submitApplication()
-    // ═══════════════════════════════════════════════════════════════════════
+    
+    
+    
 
-    /**
-     * @Nested — groups related tests under a descriptive class name.
-     * JUnit 5 runs these as a sub-group in the test report:
-     *   LoanApplicationServiceTest > submitApplication > should create...
-     */
+    
     @Nested
     @DisplayName("submitApplication()")
     class SubmitApplicationTests {
@@ -140,78 +111,78 @@ class LoanApplicationServiceTest {
         @Test
         @DisplayName("should create application when applicant exists and no active application")
         void shouldCreateApplicationSuccessfully() {
-            // ── Arrange (set up fakes and expected behavior) ──────────────────
+            
             SubmitLoanApplicationRequest request = buildSubmitRequest();
             LoanApplication savedApp = buildSavedApplication("app-001", LoanStatus.SUBMITTED);
             LoanApplicationResponse expectedResponse = buildApplicationResponse("app-001", LoanStatus.SUBMITTED);
 
-            // Fake: applicantService.existsById() returns true — applicant exists
+            
             when(applicantService.existsById("applicant-001")).thenReturn(true);
 
-            // Fake: no existing active application
+            
             when(loanApplicationRepository.existsByApplicantIdAndStatusIn(
                 eq("applicant-001"), anyList())).thenReturn(false);
 
-            // Fake: mapper creates the model from the request
+            
             when(loanApplicationMapper.toModel(request)).thenReturn(savedApp);
 
-            // Fake: repository saves and returns the saved entity (with generated ID)
+            
             when(loanApplicationRepository.save(savedApp)).thenReturn(savedApp);
 
-            // Fake: mapper converts model to response DTO
+            
             when(loanApplicationMapper.toResponse(savedApp)).thenReturn(expectedResponse);
 
-            // ── Act (call the method being tested) ────────────────────────────
+            
             LoanApplicationResponse result = loanApplicationService.submitApplication(request);
 
-            // ── Assert (verify the result) ────────────────────────────────────
+            
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo("app-001");
             assertThat(result.getStatus()).isEqualTo(LoanStatus.SUBMITTED);
 
-            // Verify that the repository's save() was called exactly once
+            
             verify(loanApplicationRepository, times(1)).save(any(LoanApplication.class));
         }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when applicant does not exist")
         void shouldThrowWhenApplicantNotFound() {
-            // Arrange: applicant doesn't exist
+            
             SubmitLoanApplicationRequest request = buildSubmitRequest();
             when(applicantService.existsById("applicant-001")).thenReturn(false);
 
-            // Act + Assert: expect ResourceNotFoundException to be thrown
+            
             assertThatThrownBy(() -> loanApplicationService.submitApplication(request))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Applicant")
                 .hasMessageContaining("applicant-001");
 
-            // Verify: save() was NEVER called — we failed before reaching the DB
+            
             verify(loanApplicationRepository, never()).save(any());
         }
 
         @Test
         @DisplayName("should throw BusinessRuleException when applicant already has active application")
         void shouldThrowWhenActiveApplicationExists() {
-            // Arrange: applicant exists BUT already has an active application
+            
             SubmitLoanApplicationRequest request = buildSubmitRequest();
             when(applicantService.existsById("applicant-001")).thenReturn(true);
             when(loanApplicationRepository.existsByApplicantIdAndStatusIn(
                 eq("applicant-001"), anyList())).thenReturn(true);
 
-            // Act + Assert: expect BusinessRuleException
+            
             assertThatThrownBy(() -> loanApplicationService.submitApplication(request))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("active loan application");
 
-            // Verify: save() was never called
+            
             verify(loanApplicationRepository, never()).save(any());
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // NESTED TEST CLASS: updateApplicationStatus()
-    // ═══════════════════════════════════════════════════════════════════════
+    
+    
+    
 
     @Nested
     @DisplayName("updateApplicationStatus()")
@@ -220,7 +191,7 @@ class LoanApplicationServiceTest {
         @Test
         @DisplayName("should transition from SUBMITTED to KYC_PENDING successfully")
         void shouldTransitionFromSubmittedToKycPending() {
-            // Arrange
+            
             LoanApplication app = buildSavedApplication("app-001", LoanStatus.SUBMITTED);
             LoanApplication updatedApp = buildSavedApplication("app-001", LoanStatus.KYC_PENDING);
             UpdateLoanStatusRequest request = UpdateLoanStatusRequest.builder()
@@ -233,11 +204,11 @@ class LoanApplicationServiceTest {
             when(loanApplicationRepository.save(any())).thenReturn(updatedApp);
             when(loanApplicationMapper.toResponse(updatedApp)).thenReturn(expectedResponse);
 
-            // Act
+            
             LoanApplicationResponse result =
                 loanApplicationService.updateApplicationStatus("app-001", request);
 
-            // Assert
+            
             assertThat(result.getStatus()).isEqualTo(LoanStatus.KYC_PENDING);
             verify(loanApplicationRepository, times(1)).save(any());
         }
@@ -245,7 +216,7 @@ class LoanApplicationServiceTest {
         @Test
         @DisplayName("should throw InvalidStateTransitionException for illegal transition SUBMITTED → DISBURSED")
         void shouldThrowForIllegalTransition() {
-            // Arrange: application is SUBMITTED; client requests DISBURSED (illegal skip)
+            
             LoanApplication app = buildSavedApplication("app-001", LoanStatus.SUBMITTED);
             UpdateLoanStatusRequest request = UpdateLoanStatusRequest.builder()
                 .newStatus(LoanStatus.DISBURSED)
@@ -253,30 +224,30 @@ class LoanApplicationServiceTest {
 
             when(loanApplicationRepository.findById("app-001")).thenReturn(Optional.of(app));
 
-            // Act + Assert: state machine throws InvalidStateTransitionException
+            
             assertThatThrownBy(() ->
                 loanApplicationService.updateApplicationStatus("app-001", request))
                 .isInstanceOf(InvalidStateTransitionException.class)
                 .hasMessageContaining("SUBMITTED")
                 .hasMessageContaining("DISBURSED");
 
-            // Verify: save() was never called — transition was rejected before any mutation
+            
             verify(loanApplicationRepository, never()).save(any());
         }
 
         @Test
         @DisplayName("should throw BusinessRuleException when rejecting without a reason")
         void shouldThrowWhenRejectingWithoutReason() {
-            // Arrange: application is SUBMITTED; valid transition to REJECTED, but no reason
+            
             LoanApplication app = buildSavedApplication("app-001", LoanStatus.SUBMITTED);
             UpdateLoanStatusRequest request = UpdateLoanStatusRequest.builder()
                 .newStatus(LoanStatus.REJECTED)
-                .reason(null)   // Missing reason — violates business rule
+                .reason(null)   
                 .build();
 
             when(loanApplicationRepository.findById("app-001")).thenReturn(Optional.of(app));
 
-            // Act + Assert
+            
             assertThatThrownBy(() ->
                 loanApplicationService.updateApplicationStatus("app-001", request))
                 .isInstanceOf(BusinessRuleException.class)
@@ -288,7 +259,7 @@ class LoanApplicationServiceTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when application does not exist")
         void shouldThrowWhenApplicationNotFound() {
-            // Arrange: repository returns empty Optional (no document found)
+            
             when(loanApplicationRepository.findById("nonexistent-id"))
                 .thenReturn(Optional.empty());
 
@@ -296,7 +267,7 @@ class LoanApplicationServiceTest {
                 .newStatus(LoanStatus.KYC_PENDING)
                 .build();
 
-            // Act + Assert
+            
             assertThatThrownBy(() ->
                 loanApplicationService.updateApplicationStatus("nonexistent-id", request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -307,15 +278,15 @@ class LoanApplicationServiceTest {
         @Test
         @DisplayName("should throw InvalidStateTransitionException when transitioning from terminal REJECTED state")
         void shouldThrowWhenTransitioningFromTerminalState() {
-            // Arrange: application is already REJECTED (terminal)
+            
             LoanApplication app = buildSavedApplication("app-001", LoanStatus.REJECTED);
             UpdateLoanStatusRequest request = UpdateLoanStatusRequest.builder()
-                .newStatus(LoanStatus.UNDER_REVIEW)  // Any transition from terminal fails
+                .newStatus(LoanStatus.UNDER_REVIEW)  
                 .build();
 
             when(loanApplicationRepository.findById("app-001")).thenReturn(Optional.of(app));
 
-            // Act + Assert: state machine blocks transition from terminal state
+            
             assertThatThrownBy(() ->
                 loanApplicationService.updateApplicationStatus("app-001", request))
                 .isInstanceOf(InvalidStateTransitionException.class)
@@ -323,9 +294,9 @@ class LoanApplicationServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // NESTED TEST CLASS: LoanStatusStateMachine (standalone unit tests)
-    // ═══════════════════════════════════════════════════════════════════════
+    
+    
+    
 
     @Nested
     @DisplayName("LoanStatusStateMachine")
