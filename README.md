@@ -1,6 +1,6 @@
 # Loan Origination System (LOS) 🚀
 
-[![LOS CI Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
+[![LOS CI Pipeline](https://github.com/amayIIp/Loan-Origination-System/actions/workflows/ci.yml/badge.svg)](https://github.com/amayIIp/Loan-Origination-System/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 📖 Overview & Problem Statement
@@ -12,7 +12,7 @@ In the modern lending ecosystem, traditional banks struggle with onboarding fric
 ## 🏗️ Architecture
 
 ```mermaid
-stateMachine
+stateDiagram-v2
     [*] --> SUBMITTED : Applicant submits form & KYC
     SUBMITTED --> UNDER_REVIEW : System validates docs & triggers BRE
     UNDER_REVIEW --> APPROVED : BRE rules pass & score > threshold
