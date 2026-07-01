@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+  index.html — the single HTML file that is served for every URL in our SPA.
+
+  What is a Single Page Application (SPA)? (beginner explanation)
+  ───────────────────────────────────────────────────────────────
+  A traditional website serves a different HTML file for each page (/home.html,
+  /about.html, /contact.html). A SPA serves THIS ONE FILE for every URL.
+  Angular then takes over inside the browser, reads the URL, and renders the
+  correct component — all without a full page reload. This makes navigation
+  feel instant and app-like.
+
+  <los-root> — Angular replaces this element with the rendered AppComponent.
+  Everything the user sees is dynamically inserted here by Angular at runtime.
+-->
+<html lang="en">
+<head>
+  <!-- Character encoding — must be first to correctly parse the rest of the HTML -->
+  <meta charset="utf-8">
+
+  <!-- Viewport meta tag — makes the layout responsive on mobile devices.
+       "width=device-width" = use the device's actual screen width.
+       "initial-scale=1" = don't zoom in/out by default. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Content Security Policy — restricts where scripts/styles can be loaded from.
+       This is a basic dev-friendly policy; tighten it for production to prevent XSS. -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+  <!-- Browser tab title — Angular's Router will override this per-route
+       using the "title" property we set in app.routes.ts -->
+  <title>LOS — Loan Origination System</title>
+
+  <!-- Favicon — replace with your actual brand icon asset -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Preconnect to Google Fonts — tells the browser to open a connection early
+       so the font download starts before the CSS @import is processed.
+       Improves page load performance by reducing connection setup time. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!--
+    Angular injects the compiled CSS <link> and JS <script> tags here automatically
+    during the build process — we do NOT manually add them.
+  -->
+</head>
+<body class="bg-los-surface">
+
+  <!--
+    <los-root> — Angular's entry point into the DOM.
+    The selector "los-root" matches the selector in AppComponent's @Component decorator.
+    Angular bootstraps AppComponent here, replacing this element with the rendered template.
+    Everything the user sees is rendered inside this element.
+  -->
+  <los-root>
+    <!--
+      Content inside <los-root> is shown BEFORE Angular finishes loading.
+      We show a simple loading indicator so users see something immediately
+      rather than a blank white screen during the Angular bootstrap process.
+    -->
+    <div style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background: #f8fafc;
+      color: #1e3a5f;
+      flex-direction: column;
+      gap: 16px;
+    ">
+      <div style="font-size: 48px;">📋</div>
+      <div style="font-size: 18px; font-weight: 600;">LOS — Loan Origination System</div>
+      <div style="font-size: 14px; color: #6b7280;">Loading application…</div>
+    </div>
+  </los-root>
+
+</body>
+</html>

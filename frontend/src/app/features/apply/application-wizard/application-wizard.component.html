@@ -1,0 +1,247 @@
+<!-- frontend/src/app/features/apply/application-wizard/application-wizard.component.html -->
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-900">Apply for a Loan</h2>
+      <p class="mt-2 text-sm text-gray-600">Complete the simple steps below to get started.</p>
+    </div>
+
+    <!-- Stepper Indicator -->
+    <nav class="mb-8" aria-label="Progress">
+      <ol role="list" class="flex items-center justify-between w-full">
+        <li class="relative pr-8 sm:pr-20">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <!-- Line connecting steps. Colors change based on progress. -->
+            <div class="h-0.5 w-full bg-gray-200" [ngClass]="{'bg-indigo-600': currentStep() > 1}"></div>
+          </div>
+          <a class="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-900">
+            <span class="text-white font-bold text-sm">1</span>
+          </a>
+        </li>
+        <li class="relative pr-8 sm:pr-20">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="h-0.5 w-full bg-gray-200" [ngClass]="{'bg-indigo-600': currentStep() > 2}"></div>
+          </div>
+          <a class="relative flex h-8 w-8 items-center justify-center rounded-full" 
+             [ngClass]="currentStep() >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 border-2 border-gray-300 text-gray-500'">
+            <span class="font-bold text-sm">2</span>
+          </a>
+        </li>
+        <li class="relative pr-8 sm:pr-20">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="h-0.5 w-full bg-gray-200" [ngClass]="{'bg-indigo-600': currentStep() > 3}"></div>
+          </div>
+          <a class="relative flex h-8 w-8 items-center justify-center rounded-full"
+             [ngClass]="currentStep() >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-200 border-2 border-gray-300 text-gray-500'">
+            <span class="font-bold text-sm">3</span>
+          </a>
+        </li>
+        <li class="relative">
+          <a class="relative flex h-8 w-8 items-center justify-center rounded-full"
+             [ngClass]="currentStep() === 4 ? 'bg-indigo-600 text-white' : 'bg-gray-200 border-2 border-gray-300 text-gray-500'">
+            <span class="font-bold text-sm">4</span>
+          </a>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Global Error Toast (Shows if backend fails or a critical validation blocks next step) -->
+    <div *ngIf="errorMessage()" class="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
+      <div class="flex">
+        <div class="ml-3">
+          <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- The Master Form. [formGroup] tells Angular to connect this HTML to our TypeScript model. -->
+    <form [formGroup]="wizardForm" (ngSubmit)="submitApplication()" class="bg-white shadow sm:rounded-lg p-6">
+      
+      <!-- STEP 1: Personal Details -->
+      <!-- Only show this block if the user is on Step 1. -->
+      <div *ngIf="currentStep() === 1" formGroupName="personal" class="space-y-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Personal Information</h3>
+        
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <!-- Full Name -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+            <!-- formControlName maps this input to 'name' in our FormBuilder setup. -->
+            <input type="text" formControlName="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <!-- Inline error message for validation. -->
+            <p *ngIf="hasError('personal', 'name', 'required')" class="mt-2 text-sm text-red-600">Name is required.</p>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email address</label>
+            <input type="email" formControlName="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('personal', 'email', 'required')" class="mt-2 text-sm text-red-600">Email is required.</p>
+            <p *ngIf="hasError('personal', 'email', 'email')" class="mt-2 text-sm text-red-600">Must be a valid email address.</p>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+            <input type="tel" formControlName="phone" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('personal', 'phone', 'required')" class="mt-2 text-sm text-red-600">Phone is required.</p>
+          </div>
+
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <input type="date" formControlName="dob" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('personal', 'dob', 'required')" class="mt-2 text-sm text-red-600">DOB is required.</p>
+            <p *ngIf="hasError('personal', 'dob', 'underage')" class="mt-2 text-sm text-red-600">You must be at least 18 years old.</p>
+          </div>
+
+          <!-- National ID -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">National ID</label>
+            <input type="text" formControlName="nationalId" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('personal', 'nationalId', 'required')" class="mt-2 text-sm text-red-600">ID is required.</p>
+          </div>
+
+          <!-- Address -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Physical Address</label>
+            <textarea formControlName="address" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            <p *ngIf="hasError('personal', 'address', 'required')" class="mt-2 text-sm text-red-600">Address is required.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Loan Details -->
+      <div *ngIf="currentStep() === 2" formGroupName="loan" class="space-y-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Loan Requirements</h3>
+        
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+          <!-- Loan Amount -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Requested Amount ($)</label>
+            <input type="number" formControlName="amount" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('loan', 'amount', 'required')" class="mt-2 text-sm text-red-600">Amount is required.</p>
+            <p *ngIf="hasError('loan', 'amount', 'min')" class="mt-2 text-sm text-red-600">Minimum amount is 100.</p>
+          </div>
+
+          <!-- Monthly Income -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Declared Monthly Income ($)</label>
+            <input type="number" formControlName="monthlyIncome" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <p *ngIf="hasError('loan', 'monthlyIncome', 'required')" class="mt-2 text-sm text-red-600">Income is required.</p>
+          </div>
+
+          <!-- Cross-field Validation Warning (Show only if touched and warning exists) -->
+          <div *ngIf="wizardForm.get('loan')?.hasError('highRatioWarning') && (wizardForm.get('loan')?.get('amount')?.touched || wizardForm.get('loan')?.get('monthlyIncome')?.touched)" class="sm:col-span-2 p-4 bg-yellow-50 rounded-md border border-yellow-200">
+            <div class="flex">
+              <div class="ml-3">
+                <p class="text-sm text-yellow-700">Warning: The requested loan amount is highly disproportionate to your stated monthly income. This may impact approval.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tenure -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Duration (Months)</label>
+            <input type="number" formControlName="tenureMonths" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          </div>
+
+          <!-- Purpose -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Loan Purpose</label>
+            <select formControlName="purpose" class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              <option value="">Select a purpose...</option>
+              <option value="Home Improvement">Home Improvement</option>
+              <option value="Debt Consolidation">Debt Consolidation</option>
+              <option value="Business Start">Business Start</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: KYC Uploads -->
+      <!-- We don't use formControlName here because file inputs don't play perfectly with Reactive Forms. We handle them manually via (change) events. -->
+      <div *ngIf="currentStep() === 3" class="space-y-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Document Uploads (KYC)</h3>
+        <p class="text-sm text-gray-500">Please provide clear copies of the following documents. Max 5MB per file (PDF/JPG/PNG).</p>
+
+        <!-- ID Proof Section -->
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">Government ID Proof (Required)</label>
+          <div class="mt-1 flex items-center">
+            <!-- Native file input triggers onFileSelect when a file is picked. -->
+            <input type="file" (change)="onFileSelect($event, 'idProof')" accept=".pdf,image/jpeg,image/png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+          </div>
+          <!-- Show manual file errors here -->
+          <p *ngIf="fileErrors['idProof']" class="mt-2 text-sm text-red-600">{{ fileErrors['idProof'] }}</p>
+          <!-- Show thumbnail preview if it's an image -->
+          <img *ngIf="kycPreviews['idProof']" [src]="kycPreviews['idProof']" class="mt-2 h-20 w-auto rounded border" alt="ID Preview">
+        </div>
+
+        <!-- Address Proof Section -->
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700">Address Proof (Optional)</label>
+          <input type="file" (change)="onFileSelect($event, 'addressProof')" accept=".pdf,image/jpeg,image/png" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700"/>
+          <p *ngIf="fileErrors['addressProof']" class="mt-2 text-sm text-red-600">{{ fileErrors['addressProof'] }}</p>
+          <img *ngIf="kycPreviews['addressProof']" [src]="kycPreviews['addressProof']" class="mt-2 h-20 w-auto rounded border" alt="Address Preview">
+        </div>
+      </div>
+
+      <!-- STEP 4: Review and Submit -->
+      <div *ngIf="currentStep() === 4" class="space-y-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Review Application</h3>
+        
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <!-- Header with an "Edit" button that jumps back to Step 1. -->
+          <div class="flex justify-between items-center border-b pb-2 mb-2">
+            <h4 class="font-medium text-gray-900">Personal Details</h4>
+            <button type="button" (click)="goToStep(1)" class="text-sm text-indigo-600 hover:text-indigo-900">Edit</button>
+          </div>
+          <!-- Use the safe navigation operator (?) to avoid crashes if data is missing. -->
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+            <div><dt class="text-gray-500">Name</dt><dd class="text-gray-900">{{ wizardForm.value.personal?.name }}</dd></div>
+            <div><dt class="text-gray-500">Email</dt><dd class="text-gray-900">{{ wizardForm.value.personal?.email }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div class="flex justify-between items-center border-b pb-2 mb-2">
+            <h4 class="font-medium text-gray-900">Loan Details</h4>
+            <button type="button" (click)="goToStep(2)" class="text-sm text-indigo-600 hover:text-indigo-900">Edit</button>
+          </div>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+            <!-- Angular's built-in currency pipe formats numbers nicely ($1,000.00). -->
+            <div><dt class="text-gray-500">Amount</dt><dd class="text-gray-900">{{ wizardForm.value.loan?.amount | currency }}</dd></div>
+            <div><dt class="text-gray-500">Income</dt><dd class="text-gray-900">{{ wizardForm.value.loan?.monthlyIncome | currency }}</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons (Footer) -->
+      <div class="mt-8 pt-5 border-t border-gray-200 flex justify-end gap-3">
+        <!-- Show "Back" button unless on the first step, or if submitting. -->
+        <button type="button" *ngIf="currentStep() > 1" [disabled]="isSubmitting()" (click)="prevStep()"
+                class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+          Back
+        </button>
+        
+        <!-- Show "Next" button on Steps 1, 2, 3. -->
+        <button type="button" *ngIf="currentStep() < 4" (click)="nextStep()"
+                class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Next
+        </button>
+
+        <!-- Show "Submit" button on Step 4. Disable it if backend is actively processing. -->
+        <button type="submit" *ngIf="currentStep() === 4" [disabled]="isSubmitting()"
+                class="bg-green-600 flex items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
+          <!-- Simple CSS spinner that only shows when isSubmitting() is true. -->
+          <svg *ngIf="isSubmitting()" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          {{ isSubmitting() ? 'Processing...' : 'Submit Application' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# application.yml — Spring Boot's main configuration file (YAML format).
+# YAML uses indentation (spaces, NOT tabs) to express hierarchy.
+# Spring Boot reads this file automatically on startup from src/main/resources/.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Server Configuration ──────────────────────────────────────────────────────
+server:
+  # The TCP port our embedded Tomcat server will listen on.
+  # Angular dev server runs on 4200; we use 8080 for the backend to avoid conflict.
+  port: 8080
+
+  # Servlet context path — all our endpoints will be prefixed with /api
+  # e.g. GET /api/health, POST /api/loans, etc.
+  # Keeping a prefix makes it easy to route via nginx or API gateway later.
+  servlet:
+    context-path: /api
+
+# ── Spring Framework Configuration ───────────────────────────────────────────
+spring:
+
+  # Application display name — useful in logs and monitoring dashboards
+  application:
+    name: los-backend
+
+  # ── MongoDB Connection ─────────────────────────────────────────────────────
+  # MongoDB is a NoSQL document database — it stores data as JSON-like documents
+  # instead of rows in tables. Spring Data MongoDB translates our Java repository
+  # method calls into MongoDB queries automatically.
+  data:
+    mongodb:
+      # Connection URI: mongodb://<host>:<port>/<database-name>
+      # - localhost = MongoDB is running on this same machine (or Docker on same host)
+      # - 27017 = default MongoDB port
+      # - los_db = the database name (MongoDB creates it automatically on first write)
+      uri: mongodb://localhost:27017/los_db
+
+      # Explicitly name the database — Spring Data uses this when building queries.
+      # Must match the database name in the URI above.
+      database: los_db
+
+  # ── DevTools Configuration ─────────────────────────────────────────────────
+  devtools:
+    restart:
+      # Enable automatic application restart when classpath files change.
+      # This saves us from manually stopping and restarting during development.
+      enabled: true
+    livereload:
+      # LiveReload sends a browser refresh signal when files change.
+      # Useful during frontend-integrated development workflows.
+      enabled: true
+
+  # ── Jackson JSON Serialisation ─────────────────────────────────────────────
+  # Jackson is the library Spring uses to convert Java objects → JSON and back.
+  jackson:
+    # Write dates as "2024-06-01T10:30:00Z" strings instead of Unix epoch numbers
+    # — human-readable format is much easier to debug and display on the frontend.
+    serialization:
+      write-dates-as-timestamps: false
+    # Use ISO-8601 date-time format (international standard) for all timestamps
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    # Do NOT fail if the JSON contains a field our Java class doesn't know about
+    # — important for forward compatibility when the frontend sends extra fields.
+    deserialization:
+      fail-on-unknown-properties: false
+
+# ── Logging Configuration ─────────────────────────────────────────────────────
+# Controls how much information is printed to the console during runtime.
+logging:
+  level:
+    # "root" = the default log level for ALL classes unless overridden below
+    root: INFO
+    # Show DEBUG-level logs only for our own application code
+    # — lets us see detailed trace without drowning in Spring framework noise
+    com.los.backend: DEBUG
+    # Show what MongoDB queries Spring Data is actually sending to the database
+    # — invaluable for debugging slow or incorrect queries during development
+    org.springframework.data.mongodb: DEBUG
+  pattern:
+    # Log format: timestamp [thread] LEVEL logger-class - message
+    # %clr() adds colour coding in terminals that support ANSI colours
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr([%thread]){magenta} %clr(%-5level){highlight} %clr(%logger{36}){cyan} - %msg%n"
+
+# ── Management / Actuator (optional, for health probes) ──────────────────────
+# Spring Boot Actuator exposes operational endpoints like /actuator/health.
+# We keep our own /api/health controller for a clean, custom response,
+# but Actuator is useful for Kubernetes liveness/readiness probes later.
+management:
+  endpoints:
+    web:
+      # All actuator endpoints sit under /actuator/* path
+      base-path: /actuator
+      exposure:
+        # Only expose "health" and "info" — never expose "env" or "beans" in production
+        # as they reveal sensitive configuration and internal wiring.
+        include: health,info
+  endpoint:
+    health:
+      # "always" shows full health detail; change to "never" in production
+      # or gate it behind authentication in Phase 2.
+      show-details: always

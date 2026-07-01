@@ -1,0 +1,25 @@
+/**
+ * proxy.conf.json — Angular development proxy configuration.
+ *
+ * What is a dev proxy? (beginner explanation)
+ * ────────────────────────────────────────────
+ * During development, Angular runs on http://localhost:4200 and our
+ * Spring Boot API runs on http://localhost:8080. If Angular tries to call
+ * /api/health directly, it would hit 4200/api/health (which doesn't exist).
+ *
+ * This proxy configuration tells Angular's dev server: "Any request that
+ * starts with /api — forward it to http://localhost:8080 on my behalf."
+ * This eliminates CORS issues entirely during dev (the browser only ever
+ * talks to 4200; the proxy handles the hop to 8080 server-side).
+ *
+ * NOTE: In production (deployed), an nginx reverse proxy or API gateway
+ * handles this routing — this file is ONLY for local development.
+ */
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}

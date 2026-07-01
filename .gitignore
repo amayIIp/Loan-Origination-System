@@ -1,0 +1,53 @@
+# ----------------------------------------------------------------------
+# JAVA / MAVEN / SPRING BOOT
+# ----------------------------------------------------------------------
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# ----------------------------------------------------------------------
+# NODE / ANGULAR
+# ----------------------------------------------------------------------
+frontend/node_modules/
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/.angular/
+frontend/.npm/
+
+# ----------------------------------------------------------------------
+# IDEs AND EDITORS
+# ----------------------------------------------------------------------
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*~
+
+# ----------------------------------------------------------------------
+# OS GENERATED FILES
+# ----------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ----------------------------------------------------------------------
+# ENVIRONMENT / SECRETS (NEVER COMMIT THESE)
+# ----------------------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+src/main/resources/application-local.yml
+src/main/resources/application-secrets.yml

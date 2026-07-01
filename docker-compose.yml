@@ -1,0 +1,62 @@
+# DOCKER COMPOSE CONFIGURATION
+# This file defines how all three parts of our system (Database, Backend, Frontend) 
+# launch together, communicate, and store data locally in a single command.
+
+version: '3.8'
+
+services:
+  # 1. THE DATABASE
+  mongodb:
+    # Use the official MongoDB image from Docker Hub.
+    image: mongo:6.0
+    # Map port 27017 inside the container to port 27017 on your physical computer.
+    ports:
+      - "27017:27017"
+    # Attach our named volume so database data survives even if the container is destroyed.
+    volumes:
+      - mongo-data:/data/db
+    # Put this container on our custom internal network.
+    networks:
+      - los-network
+
+  # 2. THE SPRING BOOT BACKEND
+  backend:
+    # Instead of an image, tell Docker to build the backend using the Dockerfile in the current directory.
+    build: .
+    # Map port 8080 to your local computer.
+    ports:
+      - "8080:8080"
+    # Provide environment variables so Spring Boot knows where the database is.
+    environment:
+      # We use 'mongodb' as the host name because Docker automatically resolves service names on the same network.
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/los_db
+      # Tell Spring to use the 'dev' configuration profile (application-dev.yml) locally.
+      - SPRING_PROFILES_ACTIVE=dev
+    # Do not start the backend until the mongodb service is up and running.
+    depends_on:
+      - mongodb
+    networks:
+      - los-network
+
+  # 3. THE ANGULAR FRONTEND
+  frontend:
+    # Build using the Dockerfile located in the ./frontend directory.
+    build: 
+      context: ./frontend
+    # Map port 80 (standard web port) inside the container to port 4200 on your computer.
+    ports:
+      - "4200:80"
+    # Do not start the frontend until the backend is running.
+    depends_on:
+      - backend
+    networks:
+      - los-network
+
+# Define a persistent volume for the database.
+volumes:
+  mongo-data:
+
+# Define an isolated network so our containers can securely talk to each other by name.
+networks:
+  los-network:
+    driver: bridge

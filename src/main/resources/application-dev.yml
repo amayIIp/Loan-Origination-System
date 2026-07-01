@@ -1,0 +1,18 @@
+# DEVELOPMENT ENVIRONMENT (Used when running locally via Docker Compose or IDE)
+spring:
+  data:
+    mongodb:
+      # Connects to the local MongoDB Docker container.
+      uri: mongodb://mongodb:27017/los_db
+
+# CORS configuration for local development. Allow Angular running on localhost.
+app:
+  cors:
+    allowed-origins: "http://localhost:4200"
+
+# Expose Actuator endpoints for local debugging.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

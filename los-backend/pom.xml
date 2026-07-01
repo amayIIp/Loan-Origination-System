@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven Project Object Model (POM) — the build configuration file for this Java project.
+  Maven reads this file to know: what Java version to use, what libraries (dependencies)
+  to download, and how to package the application into a runnable JAR file.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- Maven model version — always 4.0.0 for Maven 2/3/4 projects -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    Spring Boot Parent POM — inheriting from this gives us:
+    - Pre-configured, tested versions for hundreds of common libraries
+      (so we don't have to manually pick compatible versions).
+    - Built-in Maven plugins for packaging, testing, and running the app.
+    Think of it as a "starter template" provided by the Spring team.
+  -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <!-- Spring Boot 3.2.x — requires Java 17+, uses Jakarta EE 10 namespaces -->
+    <version>3.2.5</version>
+    <!-- Empty relativePath means Maven will fetch this from the internet, not locally -->
+    <relativePath/>
+  </parent>
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       Project Identity — uniquely identifies this artifact in the Maven
+       ecosystem. groupId = your organisation/domain, artifactId = project name.
+  ───────────────────────────────────────────────────────────────────── -->
+  <groupId>com.los</groupId>
+  <artifactId>los-backend</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <!-- "jar" means Maven will package everything into a single executable JAR -->
+  <packaging>jar</packaging>
+
+  <name>los-backend</name>
+  <description>
+    Enterprise Loan Origination and Decisioning System — Spring Boot 3 backend.
+    Handles REST APIs, Business Rule Engine (BRE) for credit decisions, and
+    MongoDB persistence for applicant/loan/KYC data.
+  </description>
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       Global Properties — values we can reference anywhere in this file
+       using ${property.name} syntax.
+  ───────────────────────────────────────────────────────────────────── -->
+  <properties>
+    <!-- Tell Maven and the compiler to use Java 17 language features -->
+    <java.version>17</java.version>
+    <!-- Encoding prevents "unmappable character" warnings on all OS -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       Dependencies — external libraries this project needs.
+       Maven downloads these from Maven Central (the internet) and
+       caches them in your ~/.m2 folder so you don't re-download them.
+  ───────────────────────────────────────────────────────────────────── -->
+  <dependencies>
+
+    <!-- ── 1. Spring Web ────────────────────────────────────────────
+         Adds the ability to build REST APIs (HTTP endpoints).
+         Brings in Apache Tomcat as an embedded web server so we
+         don't need to install a separate server — just run the JAR.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <!--
+        No <version> tag needed — Spring Boot Parent manages the version
+        automatically so all libraries stay compatible with each other.
+      -->
+    </dependency>
+
+    <!-- ── 2. Spring Data MongoDB ───────────────────────────────────
+         Lets us talk to MongoDB (our NoSQL database) using simple
+         Java interfaces — no raw database driver code needed.
+         We define a "Repository" interface and Spring generates
+         all the find/save/delete logic at runtime automatically.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-mongodb</artifactId>
+    </dependency>
+
+    <!-- ── 3. Spring Validation ─────────────────────────────────────
+         Enables annotation-based input validation on our request bodies.
+         e.g. @NotBlank, @Min, @Max, @Email on model fields so Spring
+         automatically rejects bad data before it reaches our business logic.
+         This is critical for a lending platform — we never trust raw input.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- ── 4. Lombok ────────────────────────────────────────────────
+         A code-generation library that removes Java boilerplate.
+         Annotations like @Getter, @Setter, @Builder, @AllArgsConstructor
+         tell Lombok to generate those methods at compile time so our
+         model classes stay short and readable.
+         "provided" scope means it's only needed at compile time, not in the runtime JAR.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <!-- "provided" = used by the compiler only, not bundled into the final JAR -->
+      <optional>true</optional>
+    </dependency>
+
+    <!-- ── 5. Spring Boot DevTools ──────────────────────────────────
+         Improves the developer experience during local development:
+         - Automatic application restart when source files change.
+         - Live-reload support for browser.
+         - Disabled caching for templates so changes appear immediately.
+         IMPORTANT: DevTools is automatically excluded from production builds.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <!-- "runtime" = only active when running the app, not needed for compilation -->
+      <scope>runtime</scope>
+      <!-- "optional" = not inherited by projects that depend on this one -->
+      <optional>true</optional>
+    </dependency>
+
+    <!-- ── 6. Jackson Databind (transitive, but called out explicitly) ──
+         Converts Java objects ↔ JSON automatically.
+         When our controller returns a Java object, Jackson serialises
+         it into JSON for the HTTP response. Included via spring-boot-starter-web.
+         Listed here as a comment for documentation — no explicit entry needed.
+    ──────────────────────────────────────────────────────────────── -->
+
+    <!-- ── 7. Spring Security — PHASE 2 (currently commented out) ───
+         Uncomment this block when you are ready to add JWT-based
+         authentication and role-based access control (RBAC).
+         WARNING: Enabling this without configuration will lock down
+         ALL endpoints immediately — configure SecurityFilterChain first.
+    ──────────────────────────────────────────────────────────────── -->
+    <!--
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    -->
+
+    <!-- ── 8. JJWT — JWT Library — PHASE 2 (currently commented out) ─
+         JSON Web Token (JWT) is a compact, self-contained token used for
+         authentication. After a user logs in, the server issues a JWT;
+         the client sends it with every request to prove identity.
+         Uncomment when implementing the auth filter chain in Phase 2.
+    ──────────────────────────────────────────────────────────────── -->
+    <!--
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>0.12.5</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>0.12.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>0.12.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    -->
+
+    <!-- ── 9. Spring Boot Test ──────────────────────────────────────
+         Provides JUnit 5, Mockito, MockMvc and other testing utilities.
+         "test" scope means this is ONLY available during the test phase —
+         it is never bundled into the production JAR.
+    ──────────────────────────────────────────────────────────────── -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <!-- Only compiled and run during "mvn test" — not shipped to production -->
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       Build Plugins — tools Maven uses during the build lifecycle.
+  ───────────────────────────────────────────────────────────────────── -->
+  <build>
+    <plugins>
+
+      <!--
+        Spring Boot Maven Plugin — packages everything (your code + all
+        dependencies) into one fat/uber JAR that can be run with:
+            java -jar los-backend-0.0.1-SNAPSHOT.jar
+        Also supports: mvn spring-boot:run  to start the app directly.
+      -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <!--
+            Tell the plugin to exclude Lombok from the final JAR —
+            it was only needed at compile time to generate code,
+            not at runtime when the application actually runs.
+          -->
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

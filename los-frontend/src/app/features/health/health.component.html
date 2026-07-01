@@ -1,0 +1,186 @@
+<!--
+  health.component.html — Template for the Health Check page.
+
+  Angular Template Syntax (beginner explanation):
+  ────────────────────────────────────────────────
+  - {{ expression }} — "interpolation": evaluates a TypeScript expression and
+    inserts the result as text in the DOM. e.g., {{ healthData()?.status }} renders "UP".
+  - @if (condition) { ... } — Angular 17+ control flow: renders the block only when
+    the condition is truthy. Replaces the old *ngIf directive.
+  - @for (item of list) { ... } — Angular 17+ control flow: renders the block once
+    per item in an array.
+  - [class]="expression" — property binding: sets a DOM property from a TypeScript value.
+  - (click)="method()" — event binding: calls a TypeScript method when the element is clicked.
+
+  All layout and styling uses Tailwind CSS utility classes — no custom CSS required.
+-->
+
+<!-- Page outer container — centred, max-width constrained, padded -->
+<div class="min-h-screen bg-los-surface py-10 px-4">
+  <div class="max-w-3xl mx-auto">
+
+    <!-- ── Page Header ───────────────────────────────────────────────────── -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-los-primary">
+        🩺 System Health Monitor
+      </h1>
+      <p class="mt-2 text-sm text-gray-500">
+        Verifies connectivity between this Angular frontend and the Spring Boot backend API.
+      </p>
+    </div>
+
+    <!-- ── Loading State ──────────────────────────────────────────────────── -->
+    <!--
+      @if — only shows this block while isLoading() returns true.
+      isLoading() — the () calls the Signal to read its current value.
+    -->
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-16">
+        <!-- Spinning animation ring — pure CSS, no JavaScript required -->
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-los-primary border-t-transparent"></div>
+        <span class="ml-4 text-los-primary font-medium">Pinging backend…</span>
+      </div>
+    }
+
+    <!-- ── Error State ─────────────────────────────────────────────────────── -->
+    <!--
+      Only rendered when errorMessage() has a non-null, non-empty string value.
+      This happens when the backend is unreachable or returns an error HTTP status.
+    -->
+    @if (errorMessage()) {
+      <div class="bg-red-50 border border-red-300 rounded-los-card p-6 mb-6">
+        <!-- Red alert icon + title -->
+        <div class="flex items-center mb-3">
+          <span class="text-2xl mr-3">🔴</span>
+          <h2 class="text-lg font-semibold text-red-700">Backend Unreachable</h2>
+        </div>
+
+        <!-- Error message text — errorMessage() reads the current Signal value -->
+        <p class="text-red-600 text-sm font-mono bg-red-100 rounded p-3 break-words">
+          {{ errorMessage() }}
+        </p>
+
+        <!-- Troubleshooting checklist — helps developers debug the connection quickly -->
+        <div class="mt-4 text-sm text-red-700">
+          <p class="font-semibold mb-1">Troubleshooting checklist:</p>
+          <ul class="list-disc list-inside space-y-1">
+            <li>Is Spring Boot running? → <code class="bg-red-100 px-1 rounded">mvn spring-boot:run</code></li>
+            <li>Is it on port <code class="bg-red-100 px-1 rounded">8080</code>? Check <code>application.yml</code></li>
+            <li>Is MongoDB running on <code class="bg-red-100 px-1 rounded">localhost:27017</code>?</li>
+            <li>Is the Angular proxy configured? Check <code>proxy.conf.json</code></li>
+          </ul>
+        </div>
+
+        <!-- Retry button — calls fetchHealth() again without reloading the page -->
+        <button
+          (click)="fetchHealth()"
+          class="mt-5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 rounded-md transition-colors duration-200"
+        >
+          ↺ Retry
+        </button>
+      </div>
+    }
+
+    <!-- ── Success State ───────────────────────────────────────────────────── -->
+    <!--
+      Only rendered when healthData() has a value (request succeeded).
+    -->
+    @if (healthData(); as health) {
+      <!-- Main status card -->
+      <div class="bg-white rounded-los-card shadow-los-card border border-gray-100 p-8 mb-6">
+
+        <!-- Status badge row -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-4">
+            <!-- Dynamic icon — green checkmark for UP, red X for DOWN -->
+            <span class="text-4xl">{{ health.status === 'UP' ? '✅' : '❌' }}</span>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">{{ health.service }}</h2>
+              <p class="text-sm text-gray-500">{{ health.description }}</p>
+            </div>
+          </div>
+
+          <!--
+            Status badge — [class] binding applies the computed Tailwind classes
+            from the statusClass() computed Signal in health.component.ts.
+          -->
+          <span
+            [class]="'px-4 py-1.5 rounded-full text-sm font-bold tracking-wide ' + statusClass()"
+          >
+            {{ health.status }}
+          </span>
+        </div>
+
+        <!-- Divider line -->
+        <hr class="border-gray-100 mb-6" />
+
+        <!-- Response details grid — 2 columns on medium screens and wider -->
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- API Version -->
+          <div class="bg-los-surface rounded-lg p-4">
+            <dt class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">API Version</dt>
+            <dd class="text-lg font-mono font-bold text-los-primary">{{ health.version }}</dd>
+          </div>
+
+          <!-- Response Timestamp -->
+          <div class="bg-los-surface rounded-lg p-4">
+            <dt class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Server Timestamp (UTC)</dt>
+            <!-- Date pipe formats the ISO-8601 string into a human-readable date/time -->
+            <dd class="text-sm font-mono text-gray-700">{{ health.timestamp }}</dd>
+          </div>
+
+          <!-- Service Name -->
+          <div class="bg-los-surface rounded-lg p-4">
+            <dt class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Service Name</dt>
+            <dd class="text-sm font-mono text-gray-700">{{ health.service }}</dd>
+          </div>
+
+          <!-- Last Checked (frontend time) -->
+          <div class="bg-los-surface rounded-lg p-4">
+            <dt class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">Last Checked (local)</dt>
+            <dd class="text-sm font-mono text-gray-700">
+              <!-- lastChecked() is a Date object — toLocaleTimeString() formats it -->
+              {{ lastChecked()?.toLocaleString() ?? 'N/A' }}
+            </dd>
+          </div>
+
+        </dl>
+
+        <!-- Refresh button — manually re-trigger the health check -->
+        <div class="mt-6 flex justify-end">
+          <button
+            (click)="fetchHealth()"
+            class="bg-los-primary hover:bg-blue-900 text-white text-sm font-semibold px-6 py-2 rounded-md transition-colors duration-200 flex items-center space-x-2"
+          >
+            <span>↺</span>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ── Full Raw JSON Response (collapsible, for devs) ───────────────── -->
+      <div class="bg-gray-900 rounded-los-card p-5">
+        <p class="text-xs text-gray-400 font-semibold mb-3 uppercase tracking-widest">
+          Raw API Response — GET /api/health
+        </p>
+        <!-- Display the response as prettily-formatted JSON for developers -->
+        <pre class="text-green-400 text-xs font-mono overflow-x-auto whitespace-pre-wrap">{{ health | json }}</pre>
+      </div>
+    }
+
+    <!-- ── Initial Idle State ─────────────────────────────────────────────── -->
+    <!--
+      Shows when: not loading, no data yet, and no error.
+      This briefly flickers before the first request completes.
+    -->
+    @if (!isLoading() && !healthData() && !errorMessage()) {
+      <div class="text-center py-16 text-gray-400">
+        <span class="text-5xl block mb-4">🔄</span>
+        <p>Initiating health check…</p>
+      </div>
+    }
+
+  </div>
+</div>

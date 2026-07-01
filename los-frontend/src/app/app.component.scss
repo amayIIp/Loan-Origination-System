@@ -1,0 +1,13 @@
+/**
+ * app.component.scss — root component styles.
+ *
+ * We keep component-specific styles here; global/Tailwind styles live in styles.scss.
+ * Since we use Tailwind utilities for nearly everything, this file stays minimal.
+ * Add component-specific overrides here only when Tailwind utilities are insufficient.
+ */
+
+// Smooth scrolling for the entire page — improves UX when navigating to anchor links
+:host {
+  // :host targets the <los-root> element itself (the component's host element)
+  display: block; // Ensure the root element is a block-level container
+}

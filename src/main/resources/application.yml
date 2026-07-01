@@ -1,0 +1,8 @@
+# Base configuration shared across all environments.
+spring:
+  application:
+    name: los-backend
+
+# We define the JWT Secret here as a placeholder, but it will be overridden in prod.
+jwt:
+  secret: default-dev-secret-key-that-must-be-changed-in-prod-12345

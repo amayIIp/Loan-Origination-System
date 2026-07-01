@@ -1,0 +1,23 @@
+# PRODUCTION ENVIRONMENT (Used when deployed to a cloud provider like Render or Railway)
+spring:
+  data:
+    mongodb:
+      # PULL FROM ENVIRONMENT VARIABLE: Never hardcode production database credentials!
+      # We tell Spring to read the MONGO_URI environment variable set in the cloud dashboard.
+      uri: ${MONGO_URI}
+
+jwt:
+  # PULL FROM ENVIRONMENT VARIABLE: Read a highly secure, randomly generated secret key.
+  secret: ${JWT_SECRET}
+
+app:
+  cors:
+    # PULL FROM ENVIRONMENT VARIABLE: Read the exact domain of the deployed frontend (e.g., https://my-los.vercel.app).
+    allowed-origins: ${FRONTEND_URL}
+
+# In production, only expose health metrics to avoid leaking system internals to hackers.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics"

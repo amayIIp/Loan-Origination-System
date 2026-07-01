@@ -1,0 +1,120 @@
+/* ============================================================================
+   styles.scss — Global stylesheet for the LOS Angular application.
+
+   What this file does:
+   ────────────────────
+   1. Imports Tailwind CSS's three directive layers — this is what makes all
+      Tailwind utility classes (bg-*, text-*, flex, p-4, etc.) available globally.
+   2. Imports the "Inter" font from Google Fonts for a professional fintech look.
+   3. Sets sensible global defaults that Tailwind doesn't cover out of the box.
+
+   How Tailwind layers work (beginner explanation):
+   ─────────────────────────────────────────────────
+   Tailwind is split into 3 layers that load in order:
+   @base     — browser resets (removes default margins/padding, normalises fonts)
+   @components — reusable component class patterns (we add ours here too)
+   @utilities  — the actual utility classes (bg-blue-500, text-sm, flex, etc.)
+
+   PostCSS processes this file and replaces these @tailwind directives with the
+   actual generated CSS — only including classes found in the content paths
+   defined in tailwind.config.js.
+   ============================================================================ */
+
+/* ── Google Fonts Import ───────────────────────────────────────────────────── */
+/* Inter — a clean, highly legible sans-serif font designed for UI/UX.
+   We load only the weights we actually use (400=regular, 500=medium, 600=semibold,
+   700=bold) to keep the font download as small as possible. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Tailwind Base Layer ──────────────────────────────────────────────────── */
+/* Applies Preflight (Tailwind's browser normaliser) — removes all default
+   browser styles (margins, bold on h1, blue on links) for a clean slate. */
+@tailwind base;
+
+/* ── Tailwind Components Layer ────────────────────────────────────────────── */
+/* Where Tailwind component classes live — and where we add our own reusable
+   patterns using @layer components { .my-class { @apply ...; } } */
+@tailwind components;
+
+/* ── Tailwind Utilities Layer ─────────────────────────────────────────────── */
+/* All utility classes (the ones we use in templates) are injected here. */
+@tailwind utilities;
+
+/* ── Global Base Styles ───────────────────────────────────────────────────── */
+@layer base {
+  /* Apply Inter font globally — every element inherits this unless overridden */
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Smooth font rendering on macOS/retina screens */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Smooth scrolling for anchor-link navigation */
+    scroll-behavior: smooth;
+  }
+
+  /* Remove list-style from all unordered and ordered lists by default —
+     we add it back explicitly where needed with Tailwind's list-disc class */
+  ul, ol {
+    list-style: none;
+  }
+
+  /* Ensure images never overflow their containers — important for responsive layouts */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Box-sizing: border-box — padding and border are included in element width.
+     Prevents the classic "element wider than expected" layout bug. */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}
+
+/* ── Custom Component Patterns ──────────────────────────────────────────────── */
+@layer components {
+  /*
+   * .los-card — reusable card container used throughout the LOS UI.
+   * @apply lets us compose Tailwind utilities into a named class.
+   * Use like: <div class="los-card">...</div>
+   */
+  .los-card {
+    @apply bg-white rounded-los-card shadow-los-card border border-gray-100 p-6;
+  }
+
+  /*
+   * .los-btn-primary — primary action button (loan submission, approvals)
+   */
+  .los-btn-primary {
+    @apply bg-los-primary hover:bg-blue-900 text-white font-semibold px-5 py-2
+           rounded-md transition-colors duration-200 focus:outline-none
+           focus:ring-2 focus:ring-los-primary focus:ring-offset-2;
+  }
+
+  /*
+   * .los-btn-danger — destructive action button (rejection, cancellation)
+   */
+  .los-btn-danger {
+    @apply bg-los-danger hover:bg-red-700 text-white font-semibold px-5 py-2
+           rounded-md transition-colors duration-200 focus:outline-none
+           focus:ring-2 focus:ring-los-danger focus:ring-offset-2;
+  }
+
+  /*
+   * .los-input — standard text input field for loan application forms
+   */
+  .los-input {
+    @apply w-full border border-gray-300 rounded-md px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-los-primary focus:border-los-primary
+           placeholder-gray-400 transition-all duration-150;
+  }
+
+  /*
+   * .los-badge-status — base class for loan status badges.
+   * Pair with colour modifiers: bg-green-100 text-green-700, etc.
+   */
+  .los-badge-status {
+    @apply inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold
+           uppercase tracking-wide;
+  }
+}

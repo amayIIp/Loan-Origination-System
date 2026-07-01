@@ -1,0 +1,16 @@
+/**
+ * health.component.scss — component-scoped styles for the Health page.
+ * Tailwind handles almost all styling — this file adds only what utilities cannot.
+ */
+
+// Custom animation for the status badge — a gentle pulse to draw attention
+// to the health status after the data loads.
+:host {
+  display: block; // Ensure the component's host element is block-level
+}
+
+// Smooth transition for the loading spinner fade-in
+.animate-spin {
+  // Tailwind includes this, but we note it here for clarity during reviews.
+  animation: spin 1s linear infinite;
+}

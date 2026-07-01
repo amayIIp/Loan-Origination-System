@@ -1,0 +1,108 @@
+<!--
+  app.component.html — Root application shell template.
+
+  This template defines the persistent outer layout that wraps every page.
+  The <router-outlet> is the dynamic "slot" where Angular swaps in the
+  component matching the current URL route.
+
+  Tailwind CSS classes are used throughout — each class is a small, single-purpose
+  CSS utility (e.g., "flex" = display:flex, "p-4" = padding:1rem, "bg-los-primary"
+  = our custom brand colour defined in tailwind.config.js).
+-->
+
+<!-- Outermost wrapper: full viewport height, flex column so nav + main + footer stack vertically -->
+<div class="flex flex-col min-h-screen bg-los-surface font-los">
+
+  <!-- ── Top Navigation Bar ──────────────────────────────────────────────── -->
+  <!--
+    <nav> — semantic HTML5 navigation element.
+    bg-los-primary = our custom dark navy brand colour.
+    shadow-md = a subtle drop shadow to visually separate nav from content.
+    sticky top-0 z-50 = the nav stays fixed at the top of the viewport when scrolling.
+  -->
+  <nav class="bg-los-primary shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- flex items-center justify-between = horizontal layout with logo on left, links on right -->
+      <div class="flex items-center justify-between h-16">
+
+        <!-- ── Brand / Logo ──────────────────────────────────────────────── -->
+        <a
+          [routerLink]="['/dashboard']"
+          class="flex items-center space-x-3 text-white hover:text-los-accent transition-colors duration-200"
+        >
+          <!-- Simple text logo — replace with an <img> SVG logo in a later phase -->
+          <span class="text-xl font-bold tracking-tight">📋 LOS</span>
+          <span class="text-sm text-blue-200 hidden sm:block">Loan Origination System</span>
+        </a>
+
+        <!-- ── Navigation Links ───────────────────────────────────────────── -->
+        <!-- space-x-1 = small gap between each nav link -->
+        <div class="flex items-center space-x-1">
+
+          <!-- [routerLink] — tells Angular to navigate using the router (no full page reload) -->
+          <a
+            [routerLink]="['/dashboard']"
+            class="text-blue-200 hover:text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            Dashboard
+          </a>
+
+          <a
+            [routerLink]="['/loans']"
+            class="text-blue-200 hover:text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            Loans
+          </a>
+
+          <a
+            [routerLink]="['/kyc']"
+            class="text-blue-200 hover:text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            KYC
+          </a>
+
+          <a
+            [routerLink]="['/health']"
+            class="text-blue-200 hover:text-white hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            Health
+          </a>
+
+          <!-- Login button placeholder — replaced with real auth in Phase 2 -->
+          <button
+            class="ml-4 bg-los-accent hover:bg-teal-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <!-- ── End Navigation Bar ─────────────────────────────────────────────── -->
+
+  <!-- ── Main Content Area ──────────────────────────────────────────────── -->
+  <!--
+    <main> — semantic HTML5 main content element.
+    flex-1 = this area grows to fill all available vertical space between nav and footer.
+    This prevents the footer from floating in the middle of the page on short content pages.
+  -->
+  <main class="flex-1">
+    <!--
+      <router-outlet> — the Angular router's dynamic rendering slot.
+      When the user navigates to /health, Angular renders HealthComponent here.
+      When they navigate to /dashboard, it renders DashboardComponent here.
+      The nav and footer stay unchanged — only this slot changes.
+    -->
+    <router-outlet></router-outlet>
+  </main>
+  <!-- ── End Main Content ───────────────────────────────────────────────── -->
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+  <footer class="bg-los-primary text-blue-200 text-center py-4 text-xs">
+    <!-- currentYear is a TypeScript property on AppComponent, interpolated with {{ }} -->
+    <p>© {{ currentYear }} Loan Origination System — Enterprise Lending Platform. All rights reserved.</p>
+    <p class="mt-1 text-blue-400">v{{ '1.0.0' }} | Built with Angular 17 + Spring Boot 3 + MongoDB</p>
+  </footer>
+  <!-- ── End Footer ─────────────────────────────────────────────────────── -->
+
+</div>

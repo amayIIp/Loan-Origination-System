@@ -1,0 +1,132 @@
+<!-- frontend/src/app/features/status/status-tracker/status-tracker.component.html -->
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-900">Application Status</h2>
+      <p class="mt-2 text-sm text-gray-600">Track the progress of your loan request.</p>
+    </div>
+
+    <!-- Loading Spinner (Shows while waiting for HTTP response) -->
+    <div *ngIf="isLoading()" class="flex justify-center my-12">
+      <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error()" class="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+      <p class="text-red-700">{{ error() }}</p>
+    </div>
+
+    <!-- Main Content (Shows only when data is loaded successfully) -->
+    <div *ngIf="application() as app" class="bg-white shadow overflow-hidden sm:rounded-lg">
+      
+      <!-- Basic Details Block -->
+      <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <div>
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Application #{{ app.id }}</h3>
+          <p class="mt-1 max-w-2xl text-sm text-gray-500">Requested: {{ app.amount | currency }} for {{ app.purpose }}</p>
+        </div>
+        <!-- Status Badge -->
+        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+              [ngClass]="{
+                'bg-yellow-100 text-yellow-800': app.status === 'SUBMITTED' || app.status === 'UNDER_REVIEW',
+                'bg-green-100 text-green-800': app.status === 'APPROVED',
+                'bg-red-100 text-red-800': app.status === 'REJECTED'
+              }">
+          {{ app.status }}
+        </span>
+      </div>
+
+      <!-- Visual Progress Stepper -->
+      <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <nav aria-label="Progress">
+          <ol role="list" class="overflow-hidden">
+            
+            <!-- Step 1: Submitted -->
+            <li class="relative pb-10">
+              <div class="absolute top-4 left-4 -ml-px h-full w-0.5" [ngClass]="getStepNumber(app.status) > 1 ? 'bg-indigo-600' : 'bg-gray-300'" aria-hidden="true"></div>
+              <div class="relative flex items-center group">
+                <span class="h-9 flex items-center">
+                  <span class="relative z-10 w-8 h-8 flex items-center justify-center bg-indigo-600 rounded-full">
+                    <!-- Check icon -->
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                  </span>
+                </span>
+                <span class="ml-4 min-w-0 flex-col">
+                  <span class="text-sm font-semibold tracking-wide text-indigo-600">Application Received</span>
+                  <span class="text-sm text-gray-500">We have received your forms and documents.</span>
+                </span>
+              </div>
+            </li>
+
+            <!-- Step 2: Under Review -->
+            <li class="relative pb-10">
+              <div class="absolute top-4 left-4 -ml-px h-full w-0.5" [ngClass]="getStepNumber(app.status) > 2 ? 'bg-indigo-600' : 'bg-gray-300'" aria-hidden="true"></div>
+              <div class="relative flex items-center group">
+                <span class="h-9 flex items-center">
+                  <span class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full"
+                        [ngClass]="getStepNumber(app.status) >= 2 ? 'bg-indigo-600' : 'bg-white border-2 border-gray-300'">
+                    <span *ngIf="getStepNumber(app.status) > 2" class="text-white">✓</span>
+                    <span *ngIf="getStepNumber(app.status) === 2" class="h-2.5 w-2.5 bg-white rounded-full"></span>
+                  </span>
+                </span>
+                <span class="ml-4 min-w-0 flex-col">
+                  <span class="text-sm font-semibold tracking-wide" [ngClass]="getStepNumber(app.status) >= 2 ? 'text-indigo-600' : 'text-gray-500'">Under Review</span>
+                  <span class="text-sm text-gray-500">Checking eligibility and verifying documents.</span>
+                </span>
+              </div>
+            </li>
+
+            <!-- Step 3: Decision -->
+            <li class="relative">
+              <div class="relative flex items-center group">
+                <span class="h-9 flex items-center">
+                  <span class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full"
+                        [ngClass]="{
+                          'bg-gray-300 border-2 border-gray-300': getStepNumber(app.status) < 4,
+                          'bg-green-500': app.status === 'APPROVED',
+                          'bg-red-500': app.status === 'REJECTED'
+                        }">
+                  </span>
+                </span>
+                <span class="ml-4 min-w-0 flex-col">
+                  <span class="text-sm font-semibold tracking-wide" [ngClass]="getStepNumber(app.status) === 4 ? 'text-gray-900' : 'text-gray-500'">Final Decision</span>
+                </span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <!-- Business Rule Engine (BRE) Decision Explanation Block -->
+      <!-- Only show this if the backend sent decision data (i.e., the engine ran) -->
+      <div *ngIf="app.decision" class="border-t border-gray-200 bg-gray-50 px-4 py-5 sm:px-6">
+        <h4 class="text-base font-medium text-gray-900 mb-4">Decision Breakdown</h4>
+        
+        <!-- Loop over every individual rule outcome -->
+        <ul role="list" class="space-y-3">
+          <li *ngFor="let rule of app.decision.ruleResults" class="flex p-3 bg-white border rounded shadow-sm">
+            
+            <!-- Icon indicating pass (green check) or fail (red X) -->
+            <div class="flex-shrink-0 mt-0.5">
+              <svg *ngIf="rule.passed" class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              <svg *ngIf="!rule.passed" class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+            </div>
+            
+            <!-- The human-readable translation of the rule's result -->
+            <div class="ml-3 text-sm">
+              <p [ngClass]="rule.passed ? 'text-gray-700' : 'text-red-700 font-medium'">
+                {{ translateRule(rule) }}
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
